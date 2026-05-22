@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romantic Weather Predictor</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #1f1c2c, #928dab);
+            --atmosphere-glow: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-gradient);
+            overflow: hidden;
+            transition: background 1s ease;
+            position: relative;
+        }
+
+        /* Video Background Styling */
+        .bg-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Dark overlay to ensure text remains highly readable over the video */
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 1;
+        }
+
+        /* Weather Effects Container */
+        .weather-effects {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Rain Drop Animation */
+        .rain-drop {
+            position: absolute;
+            background: linear-gradient(transparent, rgba(255, 255, 255, 0.4));
+            width: 1px;
+            height: 50px;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-100px); }
+            100% { transform: translateY(100vh); }
+        }
+
+        /* Glassmorphic Weather App Card (Perfectly Centered) */
+        .weather-card {
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 30px;
+            width: 340px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+
+        .weather-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .search-box input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .search-box button {
+            background: #ff4b5c;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s ease;
+        }
+
+        .search-box button:hover {
+            background: #ff6b7b;
+        }
+
+        .weather-info h2 {
+            margin: 10px 0 5px 0;
+            font-size: 28px;
+            font-weight: 500;
+        }
+
+        .temp {
+            font-size: 64px;
+            font-weight: 300;
+            margin: 15px 0;
+        }
+
+        .condition {
+            font-size: 18px;
+            text-transform: capitalize;
+            letter-spacing: 1px;
+            color: #f0f0f0;
+            margin-bottom: 20px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 15px;
+            border-radius: 16px;
+            font-size: 14px;
+        }
+
+        .detail-item span {
+            display: block;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <video loop playsinline class="bg-video" id="romanticVideo">
+        <source src="Paiya - Adada Mazhaida Video  Karthi, Tamannah  Yuvan Shankar Raja - SonyMusicSouthVEVO (1080p, h264).mp4" type="video/mp4">
+    </video>
+
+    <div class="video-overlay"></div>
+
+    <div class="weather-effects" id="effectsContainer"></div>
+
+    <div class="weather-card">
+        <div class="search-box">
+            <input type="text" id="cityInput" placeholder="Enter city name..." value="Paris">
+            <button onclick="getWeather()">Search</button>
+        </div>
+        
+        <div class="weather-info" id="weatherDisplay">
+            <h2 id="cityName">Paris</h2>
+            <div class="temp" id="temperature">16°C</div>
+            <div class="condition" id="condition">Passing Showers</div>
+            
+            <div class="details-grid">
+                <div class="detail-item">
+                    <span>Humidity</span>
+                    <strong id="humidity">82%</strong>
+                </div>
+                <div class="detail-item">
+                    <span>Wind Speed</span>
+                    <strong id="windSpeed">14 km/h</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const mockWeatherData = {
+            london: { temp: 12, cond: 'rainy', humid: '90%', wind: '22 km/h' },
+            paris: { temp: 16, cond: 'rainy', humid: '82%', wind: '14 km/h' },
+            newyork: { temp: 22, cond: 'cloudy', humid: '65%', wind: '11 km/h' },
+            tokyo: { temp: 26, cond: 'sunny', humid: '45%', wind: '7 km/h' },
+            mumbai: { temp: 31, cond: 'sunny', humid: '70%', wind: '18 km/h' }
+        };
+
+        const video = document.getElementById('romanticVideo');
+
+        // Activates video and sound as soon as the user clicks anywhere or hits search
+        function enableAudioAndPlay() {
+            if (video.paused) {
+                video.play().catch(error => {
+                    console.log("Audio play blocked initially: ", error);
+                });
+            }
+        }
+
+        // Listeners to unblock audio restrictions
+        document.addEventListener('click', enableAudioAndPlay, { once: true });
+        document.addEventListener('keydown', enableAudioAndPlay, { once: true });
+
+        function getWeather() {
+            enableAudioAndPlay();
+
+            const cityInput = document.getElementById('cityInput').value.trim().toLowerCase().replace(/\s+/g, '');
+            const effectsContainer = document.getElementById('effectsContainer');
+            
+            effectsContainer.innerHTML = '';
+
+            let data = mockWeatherData[cityInput];
+            if (!data) {
+                const conditions = ['sunny', 'cloudy', 'rainy'];
+                const randomCond = conditions[Math.floor(Math.random() * conditions.length)];
+                data = {
+                    temp: Math.floor(Math.random() * 25) + 10,
+                    cond: randomCond,
+                    humid: Math.floor(Math.random() * 50) + 40 + '%',
+                    wind: Math.floor(Math.random() * 20) + 5 + ' km/h'
+                };
+            }
+
+            document.getElementById('cityName').textContent = document.getElementById('cityInput').value;
+            document.getElementById('temperature').textContent = `${data.temp}°C`;
+            document.getElementById('condition').textContent = data.cond === 'rainy' ? 'Romantic Showers' : data.cond;
+            document.getElementById('humidity').textContent = data.humid;
+            document.getElementById('windSpeed').textContent = data.wind;
+
+            if (data.cond === 'rainy') {
+                document.documentElement.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #1A1C29, #32374B)');
+                document.documentElement.style.setProperty('--atmosphere-glow', 'rgba(74, 144, 226, 0.2)');
+                createRain();
+            } else if (data.cond === 'sunny') {
+                document.documentElement.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #1F3C73, #C86B85)');
+                document.documentElement.style.setProperty('--atmosphere-glow', 'rgba(255, 170, 100, 0.3)');
+            } else { 
+                document.documentElement.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #2c3e50, #bdc3c7)');
+                document.documentElement.style.setProperty('--atmosphere-glow', 'rgba(255, 255, 255, 0.05)');
+            }
+        }
+
+        function createRain() {
+            const container = document.getElementById('effectsContainer');
+            const dropCount = 60; 
+
+            for (let i = 0; i < dropCount; i++) {
+                const drop = document.createElement('div');
+                drop.classList.add('rain-drop');
+                drop.style.left = `${Math.random() * 100}%`;
+                drop.style.top = `${Math.random() * -50}px`;
+                drop.style.animationDuration = `${Math.random() * 1 + 0.6}s`;
+                drop.style.animationDelay = `${Math.random() * 2}s`;
+                container.appendChild(drop);
+            }
+        }
+
+        // Run on initial load
+        getWeather();
+    </script>
+</body>
+</html>
