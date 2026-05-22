@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hari Simple Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            /* Fallback background color if the video fails to load */
+            background-color: #4a90e2; 
+            overflow: hidden;
+        }
+
+        /* Video Background Styling */
+        .bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -1; /* Pushes the video behind the calculator */
+        }
+
+        .calculator {
+            background: #ffffffee; /* Semi-transparent white allows background depth */
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+            padding: 24px;
+            width: 320px;
+            text-align: center;
+            backdrop-filter: blur(5px); /* Optional: adds a nice modern glass effect */
+        }
+
+        .calculator h1 {
+            margin-top: 0;
+            font-size: 24px;
+            color: #222;
+        }
+
+        .calculator input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #b0bec5;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .calculator button {
+            width: 48%;
+            padding: 12px 0;
+            margin: 6px 1%;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+
+        .calculator button:hover {
+            transform: translateY(-2px);
+        }
+
+        .calculator button.operation {
+            background-color: #4a90e2;
+            color: white;
+        }
+
+        .calculator button.clear {
+            background-color: #f44336;
+            color: white;
+            width: 98%;
+        }
+
+        .result {
+            margin-top: 16px;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 12px;
+            background: #f1f8ff;
+            border-radius: 10px;
+            border: 1px solid #d0e5ff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Video Element -->
+    <video autoplay muted loop playsinline class="bg-video">
+        <!-- Replace the URL below with your local video path (e.g., "nature.mp4") -->
+        <source src="video.mp4j.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="calculator">
+        <h1>Simple Calculator</h1>
+
+        <input id="value1" type="number" placeholder="Enter first number" />
+        <input id="value2" type="number" placeholder="Enter second number" />
+
+        <div>
+            <button class="operation" onclick="calculate('+')">Add</button>
+            <button class="operation" onclick="calculate('-')">Subtract</button>
+        </div>
+        <div>
+            <button class="operation" onclick="calculate('*')">Multiply</button>
+            <button class="operation" onclick="calculate('/')">Divide</button>
+        </div>
+
+        <button class="clear" onclick="clearInputs()">Clear</button>
+
+        <div class="result" id="result">Result will appear here</div>
+    </div>
+
+    <script>
+        function calculate(operator) {
+            const value1 = parseFloat(document.getElementById('value1').value);
+            const value2 = parseFloat(document.getElementById('value2').value);
+            const resultElement = document.getElementById('result');
+
+            if (Number.isNaN(value1) || Number.isNaN(value2)) {
+                resultElement.textContent = 'Please enter both numbers.';
+                return;
+            }
+
+            let result;
+
+            switch (operator) {
+                case '+':
+                    result = value1 + value2;
+                    break;
+                case '-':
+                    result = value1 - value2;
+                    break;
+                case '*':
+                    result = value1 * value2;
+                    break;
+                case '/':
+                    if (value2 === 0) {
+                        resultElement.textContent = 'Cannot divide by zero.';
+                        return;
+                    }
+                    result = value1 / value2;
+                    break;
+                default:
+                    resultElement.textContent = 'Unknown operator.';
+                    return;
+            }
+
+            resultElement.textContent = `Result: ${result}`;
+        }
+
+        function clearInputs() {
+            document.getElementById('value1').value = '';
+            document.getElementById('value2').value = '';
+            document.getElementById('result').textContent = 'Result will appear here';
+        }
+    </script>
+</body>
+</html>
